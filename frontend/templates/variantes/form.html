@@ -1,0 +1,77 @@
+<div class="form-container">
+    <h2>{% if variante %}Editar{% else %}Nueva{% endif %} Variante</h2>
+
+    <div class="pattern-info" style="margin-bottom: 1rem;">
+        <h3>💡 Ayuda</h3>
+        <p><strong>FIJO:</strong> Ingrese un monto en CLP (ejemplo: 5000 para añadir $5,000)</p>
+        <p><strong>PORCENTAJE:</strong> Ingrese un número entero (ejemplo: 10 para añadir 10%)</p>
+    </div>
+
+    <form {% if variante %}
+          hx-post="/variantes/{{ variante.idVariante }}/update"
+          {% else %}
+          hx-post="/variantes/create"
+          {% endif %}
+          hx-target="#variantes-container"
+          hx-swap="outerHTML">
+
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required
+                   placeholder="Ej: Lacado Premium"
+                   value="{% if variante %}{{ variante.nombre }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="tipoAplicacion">Tipo de Aplicación (Strategy Pattern):</label>
+            <select id="tipoAplicacion" name="tipoAplicacion" required onchange="updateCostoLabel(this.value)">
+                <option value="">Seleccione...</option>
+                <option value="FIJO" {% if variante and variante.tipoAplicacion == 'FIJO' %}selected{% endif %}>
+                    FIJO (monto fijo en CLP)
+                </option>
+                <option value="PORCENTAJE" {% if variante and variante.tipoAplicacion == 'PORCENTAJE' %}selected{% endif %}>
+                    PORCENTAJE (% del precio base)
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="costoExtra" id="costo-label">
+                Costo Extra:
+            </label>
+            <input type="number" id="costoExtra" name="costoExtra" required
+                   placeholder="Ej: 5000 (FIJO) o 10 (PORCENTAJE)"
+                   value="{% if variante %}{{ variante.costoExtra }}{% endif %}">
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('form-container').innerHTML = ''">
+                Cancelar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateCostoLabel(tipo) {
+    const label = document.getElementById('costo-label');
+    const input = document.getElementById('costoExtra');
+    if (tipo === 'FIJO') {
+        label.textContent = 'Costo Extra (CLP):';
+        input.placeholder = 'Ej: 5000';
+    } else if (tipo === 'PORCENTAJE') {
+        label.textContent = 'Costo Extra (%):';
+        input.placeholder = 'Ej: 10';
+    } else {
+        label.textContent = 'Costo Extra:';
+        input.placeholder = '';
+    }
+}
+
+// Initialize on load
+{% if variante %}
+updateCostoLabel('{{ variante.tipoAplicacion }}');
+{% endif %}
+</script>

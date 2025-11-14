@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Orden - Mueblería{% endblock %}
+
+{% block content %}
+<h1>Nueva Orden (Estado: COTIZACION)</h1>
+
+<div class="pattern-info">
+    <h3>🎨 Decorator Pattern + 🧮 Strategy Pattern</h3>
+    <p>Al seleccionar variantes, estas "decorarán" el mueble base añadiendo costos calculados según su estrategia (FIJO o PORCENTAJE)</p>
+</div>
+
+<div class="form-container">
+    <form action="/ordenes/create" method="POST">
+        <input type="hidden" id="num_detalles" name="num_detalles" value="0">
+
+        <div id="detalles-container">
+            <h2>Items de la Orden</h2>
+        </div>
+
+        <button type="button" class="btn btn-success" onclick="addDetalle()">
+            + Agregar Item
+        </button>
+
+        <hr style="margin: 2rem 0;">
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Crear Orden</button>
+            <a href="/ordenes" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+let detalleCount = 0;
+const muebles = {{ muebles|tojson }};
+const variantes = {{ variantes|tojson }};
+
+function addDetalle() {
+    const container = document.getElementById('detalles-container');
+    const index = detalleCount++;
+    document.getElementById('num_detalles').value = detalleCount;
+
+    const detalleHtml = `
+        <div class="card" id="detalle-${index}" style="position: relative;">
+            <button type="button" class="btn btn-danger"
+                    style="position: absolute; top: 1rem; right: 1rem;"
+                    onclick="removeDetalle(${index})">
+                ✕
+            </button>
+
+            <h3>Item ${index + 1}</h3>
+
+            <div class="form-group">
+                <label>Mueble:</label>
+                <select name="detalles[${index}][idMueble]" required onchange="updatePrice(${index})">
+                    <option value="">Seleccione un mueble...</option>
+                    ${muebles.map(m => `
+                        <option value="${m.idMueble}" data-precio="${m.precioBase}">
+                            ${m.nombre} - $${m.precioBase.toLocaleString()} CLP
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Cantidad:</label>
+                <input type="number" name="detalles[${index}][cantidad]" min="1" value="1" required onchange="updatePrice(${index})">
+            </div>
+
+            <div class="form-group">
+                <label>Variantes (Decorator Pattern):</label>
+                <div id="variantes-${index}">
+                    ${variantes.map(v => `
+                        <div>
+                            <label>
+                                <input type="checkbox" value="${v.idVariante}" onchange="updateVariantes(${index})">
+                                ${v.nombre} -
+                                ${v.tipoAplicacion === 'FIJO' ?
+                                  `$${v.costoExtra.toLocaleString()} CLP` :
+                                  `${v.costoExtra}%`}
+                                <span class="badge badge-${v.tipoAplicacion.toLowerCase()}">${v.tipoAplicacion}</span>
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+                <input type="hidden" name="detalles[${index}][variantes]" id="variantes-input-${index}">
+            </div>
+
+            <div class="pattern-info" id="price-preview-${index}" style="display: none;">
+                <h3>💰 Cálculo de Precio</h3>
+                <p id="price-breakdown-${index}"></p>
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', detalleHtml);
+}
+
+function removeDetalle(index) {
+    document.getElementById(`detalle-${index}`).remove();
+}
+
+function updateVariantes(index) {
+    const checkboxes = document.querySelectorAll(`#variantes-${index} input[type="checkbox"]:checked`);
+    const ids = Array.from(checkboxes).map(cb => cb.value);
+    document.getElementById(`variantes-input-${index}`).value = ids.join(',');
+    updatePrice(index);
+}
+
+function updatePrice(index) {
+    const muebleSelect = document.querySelector(`select[name="detalles[${index}][idMueble]"]`);
+    const cantidadInput = document.querySelector(`input[name="detalles[${index}][cantidad]"]`);
+    const selectedMueble = muebleSelect.selectedOptions[0];
+
+    if (!selectedMueble || !selectedMueble.value) {
+        document.getElementById(`price-preview-${index}`).style.display = 'none';
+        return;
+    }
+
+    const precioBase = parseInt(selectedMueble.dataset.precio);
+    const cantidad = parseInt(cantidadInput.value) || 1;
+    let precioTotal = precioBase;
+    let breakdown = `Precio base: $${precioBase.toLocaleString()}<br>`;
+
+    // Calculate variantes
+    const checkboxes = document.querySelectorAll(`#variantes-${index} input[type="checkbox"]:checked`);
+    checkboxes.forEach(cb => {
+        const varianteId = parseInt(cb.value);
+        const variante = variantes.find(v => v.idVariante === varianteId);
+        if (variante) {
+            let costoVariante;
+            if (variante.tipoAplicacion === 'FIJO') {
+                costoVariante = variante.costoExtra;
+                breakdown += `+ ${variante.nombre} (FIJO): $${costoVariante.toLocaleString()}<br>`;
+            } else {
+                costoVariante = Math.floor(precioBase * variante.costoExtra / 100);
+                breakdown += `+ ${variante.nombre} (${variante.costoExtra}%): $${costoVariante.toLocaleString()}<br>`;
+            }
+            precioTotal += costoVariante;
+        }
+    });
+
+    breakdown += `<strong>= $${precioTotal.toLocaleString()} × ${cantidad} unidad(es)</strong><br>`;
+    breakdown += `<strong>Total: $${(precioTotal * cantidad).toLocaleString()} CLP</strong>`;
+
+    document.getElementById(`price-breakdown-${index}`).innerHTML = breakdown;
+    document.getElementById(`price-preview-${index}`).style.display = 'block';
+}
+
+// Add first detalle on load
+addDetalle();
+</script>
+{% endblock %}

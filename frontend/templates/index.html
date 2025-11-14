@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Mueblería - Sistema CRUD con Patrones de Diseño</h1>
+
+<div class="card">
+    <h2>Bienvenido al Sistema de Gestión de Mueblería</h2>
+    <p>Este sistema implementa los siguientes patrones de diseño:</p>
+</div>
+
+<div class="pattern-info">
+    <h3>🔄 State Pattern (Patrón Estado)</h3>
+    <p><strong>Implementación:</strong> Orden con estados COTIZACION → VENTA → CANCELADA</p>
+    <p><strong>Comportamiento:</strong> Las órdenes en COTIZACION son editables, en VENTA son inmutables</p>
+</div>
+
+<div class="pattern-info">
+    <h3>🎨 Decorator Pattern (Patrón Decorador)</h3>
+    <p><strong>Implementación:</strong> Variantes que decoran muebles base</p>
+    <p><strong>Comportamiento:</strong> Las variantes extienden el precio del mueble sin modificar la clase base</p>
+</div>
+
+<div class="pattern-info">
+    <h3>🧮 Strategy Pattern (Patrón Estrategia)</h3>
+    <p><strong>Implementación:</strong> Cálculo de precios con estrategias FIJO y PORCENTAJE</p>
+    <p><strong>Comportamiento:</strong> FIJO añade un monto fijo, PORCENTAJE añade un porcentaje del precio base</p>
+</div>
+
+<div class="pattern-info">
+    <h3>📸 Snapshot Pattern (Patrón Instantánea)</h3>
+    <p><strong>Implementación:</strong> Congelación de precios al confirmar venta</p>
+    <p><strong>Comportamiento:</strong> Los precios se guardan al momento de la confirmación y no cambian aunque el catálogo se actualice</p>
+</div>
+
+<div class="card">
+    <h2>Módulos Disponibles</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <a href="/muebles" class="btn" style="padding: 2rem; text-align: center;">
+            <h3>Muebles</h3>
+            <p>Gestionar catálogo de muebles</p>
+        </a>
+        <a href="/variantes" class="btn btn-success" style="padding: 2rem; text-align: center;">
+            <h3>Variantes</h3>
+            <p>Configurar variantes adicionales</p>
+        </a>
+        <a href="/ordenes" class="btn btn-secondary" style="padding: 2rem; text-align: center;">
+            <h3>Órdenes</h3>
+            <p>Crear y gestionar órdenes</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

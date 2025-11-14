@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Órdenes - Mueblería{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h1>Órdenes</h1>
+    <a href="/ordenes/new" class="btn btn-success">Nueva Orden</a>
+</div>
+
+{% if success %}
+<div class="alert alert-success">{{ success }}</div>
+{% endif %}
+
+<div class="pattern-info">
+    <h3>🔄 State Pattern - Estados de Orden</h3>
+    <p><strong>COTIZACION:</strong> Orden editable, precios en tiempo real</p>
+    <p><strong>VENTA:</strong> Orden confirmada, precios congelados (Snapshot Pattern)</p>
+    <p><strong>CANCELADA:</strong> Orden cancelada</p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha Creación</th>
+            <th>Estado</th>
+            <th>Total (CLP)</th>
+            <th>Items</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orden in ordenes %}
+        <tr>
+            <td>{{ orden.idOrden }}</td>
+            <td>{{ orden.fechaCreacion[:19] }}</td>
+            <td>
+                <span class="badge badge-{{ orden.estadoOrden.lower() }}">
+                    {{ orden.estadoOrden }}
+                </span>
+            </td>
+            <td>${{ "{:,}".format(orden.totalCalculado) }}</td>
+            <td>{{ orden.detalles|length }} item(s)</td>
+            <td class="actions">
+                <a href="/ordenes/{{ orden.idOrden }}" class="btn btn-secondary">Ver Detalles</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not ordenes %}
+<div class="card">
+    <p>No hay órdenes registradas. Haga clic en "Nueva Orden" para crear una.</p>
+</div>
+{% endif %}
+{% endblock %}

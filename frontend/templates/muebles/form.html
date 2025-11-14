@@ -1,0 +1,59 @@
+<div class="form-container">
+    <h2>{% if mueble %}Editar{% else %}Nuevo{% endif %} Mueble</h2>
+    <form {% if mueble %}
+          hx-post="/muebles/{{ mueble.idMueble }}/update"
+          {% else %}
+          hx-post="/muebles/create"
+          {% endif %}
+          hx-target="#muebles-container"
+          hx-swap="outerHTML">
+
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required
+                   value="{% if mueble %}{{ mueble.nombre }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="tipo">Tipo:</label>
+            <input type="text" id="tipo" name="tipo" required
+                   value="{% if mueble %}{{ mueble.tipo }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="precioBase">Precio Base (CLP):</label>
+            <input type="number" id="precioBase" name="precioBase" required
+                   value="{% if mueble %}{{ mueble.precioBase }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="stock">Stock:</label>
+            <input type="number" id="stock" name="stock" required
+                   value="{% if mueble %}{{ mueble.stock }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="tamano">Tamaño:</label>
+            <select id="tamano" name="tamano" required>
+                <option value="">Seleccione...</option>
+                <option value="PEQUENO" {% if mueble and mueble.tamano == 'PEQUENO' %}selected{% endif %}>Pequeño</option>
+                <option value="MEDIANO" {% if mueble and mueble.tamano == 'MEDIANO' %}selected{% endif %}>Mediano</option>
+                <option value="GRANDE" {% if mueble and mueble.tamano == 'GRANDE' %}selected{% endif %}>Grande</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="material">Material:</label>
+            <input type="text" id="material" name="material" required
+                   value="{% if mueble %}{{ mueble.material }}{% endif %}">
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('form-container').innerHTML = ''">
+                Cancelar
+            </button>
+        </div>
+    </form>
+</div>
