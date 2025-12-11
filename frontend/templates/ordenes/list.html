@@ -49,7 +49,7 @@
                 </span>
             </td>
             <td>${{ "{:,}".format(orden.totalCalculado) }}</td>
-            <td>{{ orden.detalles|length }} item(s)</td>
+            <td>{{ orden.detalles | map(attribute='cantidad') | sum }} item(s)</td>
             <td class="actions">
                 {% if request.path.startswith('/admin') %}
                 <a href="/admin/ordenes/{{ orden.idOrden }}" class="btn btn-secondary">Ver Detalles</a>

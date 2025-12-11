@@ -13,5 +13,6 @@ public class OrdenDTO {
   private LocalDateTime fechaConfirmacion;
   private EstadoOrden estadoOrden;
   private Long totalCalculado;
+  private Integer cantidadItems; // Número de items en la orden
   private List<DetalleOrdenDTO> detalles;
 }

@@ -419,6 +419,9 @@ public class OrdenService {
         .collect(Collectors.toList());
     dto.setDetalles(detallesDTO);
 
+    // Calcular cantidad de items (suma de todos los detalles)
+    dto.setCantidadItems(detallesDTO.size());
+
     return dto;
   }
 
