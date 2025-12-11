@@ -33,6 +33,11 @@ public class Orden {
   @Column(name = "total_calculado")
   private Long totalCalculado;
 
+  // Relación con Usuario (dueño de la orden)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id_usuario", nullable = false)
+  private Usuario usuario;
+
   // Relación con los detalles (Cascade para guardar todo junto)
   @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<DetalleOrden> detalles = new ArrayList<>();

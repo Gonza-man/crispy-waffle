@@ -6,7 +6,7 @@
 <div id="orden-detail">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h1>Orden #{{ orden.idOrden }}</h1>
-        <a href="/ordenes" class="btn btn-secondary">Volver a Órdenes</a>
+        <a href="{% if is_admin %}/admin/ordenes{% else %}/mis-ordenes{% endif %}" class="btn btn-secondary">Volver</a>
     </div>
 
     {% if success %}
@@ -102,7 +102,7 @@
 
                 {% if orden.estadoOrden == 'COTIZACION' %}
                 <button class="btn btn-danger"
-                        hx-delete="/ordenes/{{ orden.idOrden }}/detalles/{{ detalle.idDetalle }}/delete"
+                        hx-delete="/mis-ordenes/{{ orden.idOrden }}/detalles/{{ detalle.idDetalle }}/delete"
                         hx-target="#orden-detail"
                         hx-swap="outerHTML"
                         hx-confirm="¿Eliminar este item?">
@@ -127,14 +127,14 @@
 
         <div class="actions">
             <button class="btn btn-success"
-                    hx-post="/ordenes/{{ orden.idOrden }}/confirmar"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/confirmar"
                     hx-target="#orden-detail"
                     hx-swap="outerHTML"
                     hx-confirm="¿Confirmar orden? Esto aplicará el Snapshot Pattern y congelará los precios.">
                 Confirmar Orden (COTIZACION → VENTA)
             </button>
             <button class="btn btn-danger"
-                    hx-post="/ordenes/{{ orden.idOrden }}/cancelar"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/cancelar"
                     hx-target="#orden-detail"
                     hx-swap="outerHTML"
                     hx-confirm="¿Cancelar orden?">
@@ -153,7 +153,7 @@
 
         <div class="actions">
             <button class="btn btn-danger"
-                    hx-post="/ordenes/{{ orden.idOrden }}/cancelar"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/cancelar"
                     hx-target="#orden-detail"
                     hx-swap="outerHTML"
                     hx-confirm="¿Cancelar orden?">

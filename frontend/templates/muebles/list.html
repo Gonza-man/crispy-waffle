@@ -6,7 +6,7 @@
 <div id="muebles-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h1>Muebles</h1>
-        <a href="/muebles/new" class="btn" hx-get="/muebles/new" hx-target="#form-container" hx-swap="innerHTML">
+        <a href="/admin/muebles/new" class="btn" hx-get="/admin/muebles/new" hx-target="#form-container" hx-swap="innerHTML">
             Nuevo Mueble
         </a>
     </div>
@@ -42,13 +42,13 @@
                 <td>{{ mueble.material }}</td>
                 <td class="actions">
                     <button class="btn btn-secondary"
-                            hx-get="/muebles/{{ mueble.idMueble }}/edit"
+                            hx-get="/admin/muebles/{{ mueble.idMueble }}/edit"
                             hx-target="#form-container"
                             hx-swap="innerHTML">
                         Editar
                     </button>
                     <button class="btn btn-danger"
-                            hx-delete="/muebles/{{ mueble.idMueble }}/delete"
+                            hx-delete="/admin/muebles/{{ mueble.idMueble }}/delete"
                             hx-target="#muebles-container"
                             hx-swap="outerHTML"
                             hx-confirm="¿Está seguro de eliminar este mueble?">

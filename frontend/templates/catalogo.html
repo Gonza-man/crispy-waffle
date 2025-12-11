@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Catálogo de Muebles</h1>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <p>Explora nuestro catálogo y crea tu cotización personalizada</p>
+    <a href="/mis-ordenes" class="btn btn-success">Ver Mis Cotizaciones</a>
+</div>
+
+{% if muebles %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+    {% for mueble in muebles %}
+    <div class="card" style="border: 1px solid #ddd;">
+        <h3>{{ mueble.nombre }}</h3>
+        <div style="color: #666; margin: 0.5rem 0;">
+            <strong>Tipo:</strong> {{ mueble.tipo }}<br>
+            <strong>Tamaño:</strong> {{ mueble.tamano }}<br>
+            <strong>Material:</strong> {{ mueble.material }}<br>
+            <strong>Stock:</strong> {{ mueble.stock }} unidades
+        </div>
+        <div style="font-size: 1.5rem; color: #27ae60; font-weight: bold; margin: 1rem 0;">
+            ${{ "{:,}".format(mueble.precioBase) }}
+        </div>
+        <p style="font-size: 0.85rem; color: #888;">Precio base (sin variantes)</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-error">
+    No hay muebles disponibles en el catálogo
+</div>
+{% endif %}
+
+<div class="card" style="margin-top: 2rem;">
+    <h2>¿Cómo crear una cotización?</h2>
+    <p>Ve a "Mis Cotizaciones" y haz clic en "Nueva Orden" para seleccionar muebles y variantes</p>
+    <a href="/mis-ordenes/new" class="btn">Crear Nueva Cotización</a>
+</div>
+{% endblock %}

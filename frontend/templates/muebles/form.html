@@ -1,9 +1,9 @@
 <div class="form-container">
     <h2>{% if mueble %}Editar{% else %}Nuevo{% endif %} Mueble</h2>
     <form {% if mueble %}
-          hx-post="/muebles/{{ mueble.idMueble }}/update"
+          hx-post="/admin/muebles/{{ mueble.idMueble }}/update"
           {% else %}
-          hx-post="/muebles/create"
+          hx-post="/admin/muebles/create"
           {% endif %}
           hx-target="#muebles-container"
           hx-swap="outerHTML">

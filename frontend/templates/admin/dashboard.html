@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Panel de Administración</h1>
+
+<div class="card">
+    <h2>Gestión del Sistema</h2>
+    <p>Bienvenido al panel de administración de la mueblería</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem;">
+    <div class="card">
+        <h3>Muebles</h3>
+        <p>Gestionar catálogo de muebles</p>
+        <a href="/admin/muebles" class="btn" style="margin-top: 1rem;">Ver Muebles</a>
+    </div>
+
+    <div class="card">
+        <h3>Variantes</h3>
+        <p>Configurar variantes adicionales</p>
+        <a href="/admin/variantes" class="btn btn-success" style="margin-top: 1rem;">Ver Variantes</a>
+    </div>
+
+    <div class="card">
+        <h3>Órdenes</h3>
+        <p>Ver todas las órdenes del sistema</p>
+        <a href="/admin/ordenes" class="btn btn-secondary" style="margin-top: 1rem;">Ver Órdenes</a>
+    </div>
+
+    <div class="card">
+        <h3>Usuarios</h3>
+        <p>Gestionar usuarios y roles</p>
+        <a href="/admin/usuarios" class="btn btn-danger" style="margin-top: 1rem;">Ver Usuarios</a>
+    </div>
+</div>
+{% endblock %}

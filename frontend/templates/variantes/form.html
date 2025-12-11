@@ -8,9 +8,9 @@
     </div>
 
     <form {% if variante %}
-          hx-post="/variantes/{{ variante.idVariante }}/update"
+          hx-post="/admin/variantes/{{ variante.idVariante }}/update"
           {% else %}
-          hx-post="/variantes/create"
+          hx-post="/admin/variantes/create"
           {% endif %}
           hx-target="#variantes-container"
           hx-swap="outerHTML">

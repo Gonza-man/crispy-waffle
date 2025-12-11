@@ -196,10 +196,30 @@
 <body>
     <nav>
         <div class="container">
-            <a href="/" class="{% if request.path == '/' %}active{% endif %}">Inicio</a>
-            <a href="/muebles" class="{% if '/muebles' in request.path %}active{% endif %}">Muebles</a>
-            <a href="/variantes" class="{% if '/variantes' in request.path %}active{% endif %}">Variantes</a>
-            <a href="/ordenes" class="{% if '/ordenes' in request.path %}active{% endif %}">Órdenes</a>
+            {% if is_authenticated %}
+                <a href="/" class="{% if request.path == '/' %}active{% endif %}">Inicio</a>
+
+                {% if is_admin %}
+                    <!-- Admin navigation -->
+                    <a href="/admin" class="{% if request.path == '/admin' %}active{% endif %}">Dashboard</a>
+                    <a href="/admin/muebles" class="{% if '/admin/muebles' in request.path %}active{% endif %}">Muebles</a>
+                    <a href="/admin/variantes" class="{% if '/admin/variantes' in request.path %}active{% endif %}">Variantes</a>
+                    <a href="/admin/ordenes" class="{% if '/admin/ordenes' in request.path %}active{% endif %}">Órdenes</a>
+                    <a href="/admin/usuarios" class="{% if '/admin/usuarios' in request.path %}active{% endif %}">Usuarios</a>
+                {% else %}
+                    <!-- User navigation -->
+                    <a href="/catalogo" class="{% if request.path == '/catalogo' %}active{% endif %}">Catálogo</a>
+                    <a href="/mis-ordenes" class="{% if '/mis-ordenes' in request.path %}active{% endif %}">Mis Cotizaciones</a>
+                {% endif %}
+
+                <div style="margin-left: auto; display: flex; gap: 1rem; align-items: center;">
+                    <span style="color: #ddd;">Usuario: {{ current_user.username }} ({{ current_user.rol }})</span>
+                    <a href="/logout" class="btn btn-danger" style="padding: 0.25rem 0.75rem;">Cerrar Sesión</a>
+                </div>
+            {% else %}
+                <a href="/login">Iniciar Sesión</a>
+                <a href="/register">Registrarse</a>
+            {% endif %}
         </div>
     </nav>
 

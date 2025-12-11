@@ -11,6 +11,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/mysql
       SPRING_DATASOURCE_USERNAME: userapp
       SPRING_DATASOURCE_PASSWORD: unaContraMuyMuySegura
+      # Admin user configuration (created automatically on first run)
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@muebleria.cl}
     networks:
       - api
 

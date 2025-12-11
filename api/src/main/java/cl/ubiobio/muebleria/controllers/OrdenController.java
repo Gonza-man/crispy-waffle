@@ -4,9 +4,13 @@ import cl.ubiobio.muebleria.dto.CrearOrdenRequestDTO;
 import cl.ubiobio.muebleria.dto.DetalleRequestDTO;
 import cl.ubiobio.muebleria.dto.OrdenDTO;
 import cl.ubiobio.muebleria.enums.EstadoOrden;
+import cl.ubiobio.muebleria.models.Usuario;
+import cl.ubiobio.muebleria.security.CustomUserDetailsService;
 import cl.ubiobio.muebleria.services.OrdenService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,29 +30,39 @@ public class OrdenController {
 
   private final OrdenService ordenService;
 
+  @Autowired
+  private CustomUserDetailsService userDetailsService;
+
   public OrdenController(OrdenService ordenService) {
     this.ordenService = ordenService;
   }
 
+  private Usuario getAuthenticatedUser(Authentication authentication) {
+    return userDetailsService.getUserByUsername(authentication.getName());
+  }
+
   @GetMapping
-  public ResponseEntity<List<OrdenDTO>> listar() {
-    List<OrdenDTO> ordenes = ordenService.listarOrdenes();
+  public ResponseEntity<List<OrdenDTO>> listar(Authentication authentication) {
+    Usuario usuario = getAuthenticatedUser(authentication);
+    List<OrdenDTO> ordenes = ordenService.listarOrdenes(usuario);
     return ResponseEntity.ok(ordenes);
   }
 
   @GetMapping("/estado/{estado}")
-  public ResponseEntity<List<OrdenDTO>> listarPorEstado(@PathVariable EstadoOrden estado) {
-    List<OrdenDTO> ordenes = ordenService.listarPorEstado(estado);
+  public ResponseEntity<List<OrdenDTO>> listarPorEstado(@PathVariable EstadoOrden estado, Authentication authentication) {
+    Usuario usuario = getAuthenticatedUser(authentication);
+    List<OrdenDTO> ordenes = ordenService.listarPorEstado(estado, usuario);
     return ResponseEntity.ok(ordenes);
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<OrdenDTO> obtenerPorId(@PathVariable Integer id) {
+  public ResponseEntity<OrdenDTO> obtenerPorId(@PathVariable Integer id, Authentication authentication) {
     try {
-      OrdenDTO orden = ordenService.obtenerPorId(id);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO orden = ordenService.obtenerPorId(id, usuario);
       return ResponseEntity.ok(orden);
     } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
     }
   }
 
@@ -56,12 +70,14 @@ public class OrdenController {
    * Crea una nueva orden en estado COTIZACION
    */
   @PostMapping
-  public ResponseEntity<OrdenDTO> crear(@RequestBody CrearOrdenRequestDTO request) {
+  public ResponseEntity<?> crear(@RequestBody CrearOrdenRequestDTO request, Authentication authentication) {
     try {
-      OrdenDTO creada = ordenService.crearOrden(request);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO creada = ordenService.crearOrden(request, usuario);
       return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().body(null);
+      e.printStackTrace();
+      return ResponseEntity.badRequest().body(e.getMessage());
     }
   }
 
@@ -71,9 +87,11 @@ public class OrdenController {
    */
   @PostMapping("/{id}/detalles")
   public ResponseEntity<?> agregarDetalle(@PathVariable Integer id,
-                                          @RequestBody DetalleRequestDTO request) {
+                                          @RequestBody DetalleRequestDTO request,
+                                          Authentication authentication) {
     try {
-      OrdenDTO actualizada = ordenService.agregarDetalle(id, request);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO actualizada = ordenService.agregarDetalle(id, request, usuario);
       return ResponseEntity.ok(actualizada);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
@@ -86,9 +104,11 @@ public class OrdenController {
    */
   @DeleteMapping("/{idOrden}/detalles/{idDetalle}")
   public ResponseEntity<?> eliminarDetalle(@PathVariable Integer idOrden,
-                                           @PathVariable Integer idDetalle) {
+                                           @PathVariable Integer idDetalle,
+                                           Authentication authentication) {
     try {
-      OrdenDTO actualizada = ordenService.eliminarDetalle(idOrden, idDetalle);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO actualizada = ordenService.eliminarDetalle(idOrden, idDetalle, usuario);
       return ResponseEntity.ok(actualizada);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
@@ -101,9 +121,10 @@ public class OrdenController {
    * SNAPSHOT PATTERN: Congela precios
    */
   @PostMapping("/{id}/confirmar")
-  public ResponseEntity<?> confirmar(@PathVariable Integer id) {
+  public ResponseEntity<?> confirmar(@PathVariable Integer id, Authentication authentication) {
     try {
-      OrdenDTO confirmada = ordenService.confirmarOrden(id);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO confirmada = ordenService.confirmarOrden(id, usuario);
       return ResponseEntity.ok(confirmada);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
@@ -115,9 +136,10 @@ public class OrdenController {
    * STATE PATTERN: Transición a estado CANCELADA
    */
   @PostMapping("/{id}/cancelar")
-  public ResponseEntity<?> cancelar(@PathVariable Integer id) {
+  public ResponseEntity<?> cancelar(@PathVariable Integer id, Authentication authentication) {
     try {
-      OrdenDTO cancelada = ordenService.cancelarOrden(id);
+      Usuario usuario = getAuthenticatedUser(authentication);
+      OrdenDTO cancelada = ordenService.cancelarOrden(id, usuario);
       return ResponseEntity.ok(cancelada);
     } catch (RuntimeException e) {
       return ResponseEntity.badRequest().body(e.getMessage());

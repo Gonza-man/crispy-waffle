@@ -4,6 +4,7 @@ import cl.ubiobio.muebleria.dto.CrearOrdenRequestDTO;
 import cl.ubiobio.muebleria.dto.DetalleRequestDTO;
 import cl.ubiobio.muebleria.dto.OrdenDTO;
 import cl.ubiobio.muebleria.enums.EstadoOrden;
+import cl.ubiobio.muebleria.enums.Rol;
 import cl.ubiobio.muebleria.enums.TipoAplicacion;
 import cl.ubiobio.muebleria.models.*;
 import cl.ubiobio.muebleria.repositories.MuebleRepository;
@@ -61,6 +62,8 @@ class OrdenServiceTest {
     private VarianteAdicional variantePorcentaje;
     private Orden ordenCotizacion;
     private Orden ordenVenta;
+    private Usuario usuario;
+    private Usuario adminUsuario;
 
     @BeforeEach
     void setUp() {
@@ -70,6 +73,20 @@ class OrdenServiceTest {
 
         lenient().when(precioStrategyFactory.getStrategy(TipoAplicacion.FIJO)).thenReturn(fijoStrategy);
         lenient().when(precioStrategyFactory.getStrategy(TipoAplicacion.PORCENTAJE)).thenReturn(porcentajeStrategy);
+
+        // Usuario normal
+        usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setUsername("testuser");
+        usuario.setRol(Rol.USER);
+        usuario.setActivo(true);
+
+        // Usuario admin
+        adminUsuario = new Usuario();
+        adminUsuario.setId(2L);
+        adminUsuario.setUsername("admin");
+        adminUsuario.setRol(Rol.ADMIN);
+        adminUsuario.setActivo(true);
 
         // Mueble base
         mueble = new Mueble();
@@ -96,6 +113,7 @@ class OrdenServiceTest {
         ordenCotizacion.setIdOrden(1);
         ordenCotizacion.setEstadoOrden(EstadoOrden.COTIZACION);
         ordenCotizacion.setFechaCreacion(LocalDateTime.now());
+        ordenCotizacion.setUsuario(usuario);
 
         // Orden en VENTA
         ordenVenta = new Orden();
@@ -103,6 +121,7 @@ class OrdenServiceTest {
         ordenVenta.setEstadoOrden(EstadoOrden.VENTA);
         ordenVenta.setFechaCreacion(LocalDateTime.now());
         ordenVenta.setFechaConfirmacion(LocalDateTime.now());
+        ordenVenta.setUsuario(usuario);
     }
 
     // ==================== STATE PATTERN TESTS ====================
@@ -127,7 +146,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then
         assertNotNull(resultado);
@@ -150,7 +169,7 @@ class OrdenServiceTest {
         detalleRequest.setIdsVariantes(Arrays.asList());
 
         // When
-        OrdenDTO resultado = ordenService.agregarDetalle(1, detalleRequest);
+        OrdenDTO resultado = ordenService.agregarDetalle(1, detalleRequest, usuario);
 
         // Then
         assertNotNull(resultado);
@@ -169,7 +188,7 @@ class OrdenServiceTest {
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            ordenService.agregarDetalle(2, detalleRequest);
+            ordenService.agregarDetalle(2, detalleRequest, usuario);
         });
 
         assertTrue(exception.getMessage().contains("VENTA"));
@@ -189,7 +208,7 @@ class OrdenServiceTest {
         when(ordenRepository.save(any(Orden.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        OrdenDTO resultado = ordenService.confirmarOrden(1);
+        OrdenDTO resultado = ordenService.confirmarOrden(1, usuario);
 
         // Then
         assertEquals(EstadoOrden.VENTA, resultado.getEstadoOrden());
@@ -205,7 +224,7 @@ class OrdenServiceTest {
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            ordenService.confirmarOrden(2);
+            ordenService.confirmarOrden(2, usuario);
         });
 
         assertTrue(exception.getMessage().contains("COTIZACION"));
@@ -219,7 +238,7 @@ class OrdenServiceTest {
         when(ordenRepository.save(any(Orden.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        OrdenDTO resultado = ordenService.cancelarOrden(1);
+        OrdenDTO resultado = ordenService.cancelarOrden(1, usuario);
 
         // Then
         assertEquals(EstadoOrden.CANCELADA, resultado.getEstadoOrden());
@@ -247,7 +266,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then
         // Base: 15000 × 2 = 30000
@@ -275,7 +294,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then
         // Base: 15000 + Lacado: 5000 = 20000
@@ -303,7 +322,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then
         // Base: 15000 + Tapizado 10%: 1500 = 16500
@@ -332,7 +351,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then
         // Base: 15000 + Lacado: 5000 + Tapizado 10%: 1500 = 21500 por unidad
@@ -363,7 +382,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then - Strategy FIJO adds exactly 5000
         assertEquals(20000L, resultado.getTotalCalculado()); // 15000 + 5000
@@ -390,7 +409,7 @@ class OrdenServiceTest {
         request.setDetalles(Arrays.asList(detalleRequest));
 
         // When
-        OrdenDTO resultado = ordenService.crearOrden(request);
+        OrdenDTO resultado = ordenService.crearOrden(request, usuario);
 
         // Then - Strategy PORCENTAJE calculates 10% of 15000 = 1500
         assertEquals(16500L, resultado.getTotalCalculado()); // 15000 + 1500
@@ -416,7 +435,7 @@ class OrdenServiceTest {
         when(ordenRepository.save(any(Orden.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        OrdenDTO resultado = ordenService.confirmarOrden(1);
+        OrdenDTO resultado = ordenService.confirmarOrden(1, usuario);
 
         // Then - Prices should be frozen in snapshot fields
         assertNotNull(resultado.getDetalles().get(0).getPrecioUnitarioFinal());
@@ -439,7 +458,7 @@ class OrdenServiceTest {
         when(ordenRepository.save(any(Orden.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        OrdenDTO resultado = ordenService.confirmarOrden(1);
+        OrdenDTO resultado = ordenService.confirmarOrden(1, usuario);
 
         // Then
         assertNotNull(resultado.getTotalCalculado());

@@ -11,7 +11,7 @@
 </div>
 
 <div class="form-container">
-    <form action="/ordenes/create" method="POST">
+    <form action="{% if is_admin %}/admin/ordenes/create{% else %}/mis-ordenes/create{% endif %}" method="POST">
         <input type="hidden" id="num_detalles" name="num_detalles" value="0">
 
         <div id="detalles-container">
@@ -26,7 +26,7 @@
 
         <div class="actions">
             <button type="submit" class="btn btn-success">Crear Orden</button>
-            <a href="/ordenes" class="btn btn-secondary">Cancelar</a>
+            <a href="{% if is_admin %}/admin/ordenes{% else %}/mis-ordenes{% endif %}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
 </div>
@@ -56,8 +56,13 @@ function addDetalle() {
                 <select name="detalles[${index}][idMueble]" required onchange="updatePrice(${index})">
                     <option value="">Seleccione un mueble...</option>
                     ${muebles.map(m => `
-                        <option value="${m.idMueble}" data-precio="${m.precioBase}">
+                        <option value="${m.idMueble}"
+                                data-precio="${m.precioBase}"
+                                data-stock="${m.stock}"
+                                ${m.stock === 0 ? 'disabled' : ''}>
                             ${m.nombre} - $${m.precioBase.toLocaleString()} CLP
+                            (Stock: ${m.stock})
+                            ${m.stock === 0 ? '⚠️ SIN STOCK' : ''}
                         </option>
                     `).join('')}
                 </select>
@@ -65,7 +70,16 @@ function addDetalle() {
 
             <div class="form-group">
                 <label>Cantidad:</label>
-                <input type="number" name="detalles[${index}][cantidad]" min="1" value="1" required onchange="updatePrice(${index})">
+                <input type="number"
+                       name="detalles[${index}][cantidad]"
+                       id="cantidad-${index}"
+                       min="1"
+                       value="1"
+                       required
+                       onchange="updatePrice(${index})">
+                <small id="stock-warning-${index}" style="color: #e74c3c; display: none; margin-top: 0.25rem;">
+                    ⚠️ Cantidad solicitada excede el stock disponible
+                </small>
             </div>
 
             <div class="form-group">
@@ -112,14 +126,31 @@ function updatePrice(index) {
     const muebleSelect = document.querySelector(`select[name="detalles[${index}][idMueble]"]`);
     const cantidadInput = document.querySelector(`input[name="detalles[${index}][cantidad]"]`);
     const selectedMueble = muebleSelect.selectedOptions[0];
+    const stockWarning = document.getElementById(`stock-warning-${index}`);
 
     if (!selectedMueble || !selectedMueble.value) {
         document.getElementById(`price-preview-${index}`).style.display = 'none';
+        stockWarning.style.display = 'none';
         return;
     }
 
     const precioBase = parseInt(selectedMueble.dataset.precio);
+    const stockDisponible = parseInt(selectedMueble.dataset.stock);
     const cantidad = parseInt(cantidadInput.value) || 1;
+
+    // Validar stock y mostrar advertencia
+    if (cantidad > stockDisponible) {
+        stockWarning.style.display = 'block';
+        stockWarning.textContent = `⚠️ Stock insuficiente. Disponible: ${stockDisponible}`;
+        cantidadInput.setCustomValidity('Stock insuficiente');
+    } else {
+        stockWarning.style.display = 'none';
+        cantidadInput.setCustomValidity('');
+    }
+
+    // Actualizar límite máximo del input
+    cantidadInput.max = stockDisponible;
+
     let precioTotal = precioBase;
     let breakdown = `Precio base: $${precioBase.toLocaleString()}<br>`;
 

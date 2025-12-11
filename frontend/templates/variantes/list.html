@@ -6,7 +6,7 @@
 <div id="variantes-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h1>Variantes Adicionales</h1>
-        <a href="/variantes/new" class="btn btn-success" hx-get="/variantes/new" hx-target="#form-container" hx-swap="innerHTML">
+        <a href="/admin/variantes/new" class="btn btn-success" hx-get="/admin/variantes/new" hx-target="#form-container" hx-swap="innerHTML">
             Nueva Variante
         </a>
     </div>
@@ -54,13 +54,13 @@
                 <td>{{ '✓' if variante.activo else '✗' }}</td>
                 <td class="actions">
                     <button class="btn btn-secondary"
-                            hx-get="/variantes/{{ variante.idVariante }}/edit"
+                            hx-get="/admin/variantes/{{ variante.idVariante }}/edit"
                             hx-target="#form-container"
                             hx-swap="innerHTML">
                         Editar
                     </button>
                     <button class="btn btn-danger"
-                            hx-delete="/variantes/{{ variante.idVariante }}/delete"
+                            hx-delete="/admin/variantes/{{ variante.idVariante }}/delete"
                             hx-target="#variantes-container"
                             hx-swap="outerHTML"
                             hx-confirm="¿Está seguro de eliminar esta variante?">
