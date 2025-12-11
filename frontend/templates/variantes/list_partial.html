@@ -1,0 +1,75 @@
+<div id="variantes-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h1>Variantes Adicionales</h1>
+        <a href="/admin/variantes/new" class="btn btn-success" hx-get="/admin/variantes/new" hx-target="#form-container" hx-swap="innerHTML">
+            Nueva Variante
+        </a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="pattern-info">
+        <h3>🧮 Strategy Pattern - Tipo de Aplicación</h3>
+        <p><strong>FIJO:</strong> El costo extra es un monto fijo en CLP (ej: 5,000)</p>
+        <p><strong>PORCENTAJE:</strong> El costo extra es un porcentaje del precio base (ej: 10 = 10%)</p>
+    </div>
+
+    <div id="form-container"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Costo Extra</th>
+                <th>Tipo Aplicación</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for variante in variantes %}
+            <tr>
+                <td>{{ variante.idVariante }}</td>
+                <td>{{ variante.nombre }}</td>
+                <td>
+                    {% if variante.tipoAplicacion == 'FIJO' %}
+                        ${{ "{:,}".format(variante.costoExtra) }} CLP
+                    {% else %}
+                        {{ variante.costoExtra }}%
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-{{ variante.tipoAplicacion.lower() }}">
+                        {{ variante.tipoAplicacion }}
+                    </span>
+                </td>
+                <td>{{ '✓' if variante.activo else '✗' }}</td>
+                <td class="actions">
+                    <button class="btn btn-secondary"
+                            hx-get="/admin/variantes/{{ variante.idVariante }}/edit"
+                            hx-target="#form-container"
+                            hx-swap="innerHTML">
+                        Editar
+                    </button>
+                    <button class="btn btn-danger"
+                            hx-delete="/admin/variantes/{{ variante.idVariante }}/delete"
+                            hx-target="#variantes-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Está seguro de eliminar esta variante?">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not variantes %}
+    <div class="card">
+        <p>No hay variantes registradas. Haga clic en "Nueva Variante" para agregar una.</p>
+    </div>
+    {% endif %}
+</div>

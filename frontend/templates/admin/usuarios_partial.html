@@ -1,0 +1,96 @@
+<div id="usuarios-container">
+    <h1>Gestión de Usuarios</h1>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h2>Información</h2>
+        <p>Como administrador, puedes promover usuarios a administradores o degradarlos a usuarios normales.</p>
+        <p><strong>Roles:</strong></p>
+        <ul>
+            <li><strong>USER:</strong> Puede ver catálogo y gestionar sus propias cotizaciones</li>
+            <li><strong>ADMIN:</strong> Acceso completo al sistema (muebles, variantes, todas las órdenes, usuarios)</li>
+        </ul>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.id }}</td>
+                <td>{{ usuario.username }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                    <span class="badge {% if usuario.rol == 'ADMIN' %}badge-success{% else %}badge-secondary{% endif %}">
+                        {{ usuario.rol }}
+                    </span>
+                </td>
+                <td>
+                    {% if usuario.activo %}
+                    <span style="color: #27ae60;">✓ Activo</span>
+                    {% else %}
+                    <span style="color: #e74c3c;">✗ Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>{{ usuario.fechaCreacion[:10] }}</td>
+                <td class="actions">
+                    {% if usuario.rol == 'USER' %}
+                    <button class="btn btn-success"
+                            hx-put="/admin/usuarios/{{ usuario.id }}/promover"
+                            hx-target="#usuarios-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Promover a {{ usuario.username }} a ADMIN?">
+                        ⬆️ Promover a ADMIN
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary"
+                            hx-put="/admin/usuarios/{{ usuario.id }}/degradar"
+                            hx-target="#usuarios-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Degradar a {{ usuario.username }} a USER?">
+                        ⬇️ Degradar a USER
+                    </button>
+                    {% endif %}
+
+                    {% if usuario.activo %}
+                    <button class="btn btn-danger"
+                            hx-put="/admin/usuarios/{{ usuario.id }}/toggle-activo"
+                            hx-target="#usuarios-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Desactivar a {{ usuario.username }}?">
+                        Desactivar
+                    </button>
+                    {% else %}
+                    <button class="btn btn-success"
+                            hx-put="/admin/usuarios/{{ usuario.id }}/toggle-activo"
+                            hx-target="#usuarios-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Activar a {{ usuario.username }}?">
+                        Activar
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not usuarios %}
+    <div class="card">
+        <p>No hay usuarios registrados en el sistema.</p>
+    </div>
+    {% endif %}
+</div>

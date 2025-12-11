@@ -1,0 +1,63 @@
+<div id="muebles-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h1>Muebles</h1>
+        <a href="/admin/muebles/new" class="btn" hx-get="/admin/muebles/new" hx-target="#form-container" hx-swap="innerHTML">
+            Nuevo Mueble
+        </a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div id="form-container"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Precio Base (CLP)</th>
+                <th>Stock</th>
+                <th>Tamaño</th>
+                <th>Material</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mueble in muebles %}
+            <tr>
+                <td>{{ mueble.idMueble }}</td>
+                <td>{{ mueble.nombre }}</td>
+                <td>{{ mueble.tipo }}</td>
+                <td>${{ "{:,}".format(mueble.precioBase) }}</td>
+                <td>{{ mueble.stock }}</td>
+                <td>{{ mueble.tamano }}</td>
+                <td>{{ mueble.material }}</td>
+                <td class="actions">
+                    <button class="btn btn-secondary"
+                            hx-get="/admin/muebles/{{ mueble.idMueble }}/edit"
+                            hx-target="#form-container"
+                            hx-swap="innerHTML">
+                        Editar
+                    </button>
+                    <button class="btn btn-danger"
+                            hx-delete="/admin/muebles/{{ mueble.idMueble }}/delete"
+                            hx-target="#muebles-container"
+                            hx-swap="outerHTML"
+                            hx-confirm="¿Está seguro de eliminar este mueble?">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if not muebles %}
+    <div class="card">
+        <p>No hay muebles registrados. Haga clic en "Nuevo Mueble" para agregar uno.</p>
+    </div>
+    {% endif %}
+</div>

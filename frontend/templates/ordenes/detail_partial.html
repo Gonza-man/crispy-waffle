@@ -1,0 +1,181 @@
+<div id="orden-detail">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h1>Orden #{{ orden.idOrden }}</h1>
+        <a href="{% if is_admin %}/admin/ordenes{% else %}/mis-ordenes{% endif %}" class="btn btn-secondary">Volver</a>
+    </div>
+
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="card">
+        <h2>Información General</h2>
+        <table style="box-shadow: none;">
+            <tr>
+                <th style="width: 200px;">Estado (State Pattern):</th>
+                <td>
+                    <span class="badge badge-{{ orden.estadoOrden.lower() }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                        {{ orden.estadoOrden }}
+                    </span>
+                    {% if orden.estadoOrden == 'COTIZACION' %}
+                    <span style="color: #666; margin-left: 1rem;">
+                        (Editable - precios en tiempo real)
+                    </span>
+                    {% elif orden.estadoOrden == 'VENTA' %}
+                    <span style="color: #666; margin-left: 1rem;">
+                        (Inmutable - precios congelados 📸)
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Fecha Creación:</th>
+                <td>{{ orden.fechaCreacion[:19] }}</td>
+            </tr>
+            {% if orden.fechaConfirmacion %}
+            <tr>
+                <th>Fecha Confirmación:</th>
+                <td>{{ orden.fechaConfirmacion[:19] }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>Total:</th>
+                <td style="font-size: 1.5rem; font-weight: bold; color: #27ae60;">
+                    ${{ "{:,}".format(orden.totalCalculado) }} CLP
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {% if orden.estadoOrden == 'VENTA' %}
+    <div class="pattern-info">
+        <h3>📸 Snapshot Pattern - Precios Congelados</h3>
+        <p>Esta orden fue confirmada el {{ orden.fechaConfirmacion[:19] }}. Los precios mostrados son los que se calcularon en ese momento y no cambiarán aunque el catálogo se actualice.</p>
+        <p><strong>Campos congelados:</strong> precioUnitarioFinal, precioAplicadoSnapshot, totalCalculado</p>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h2>Detalles de la Orden (Decorator Pattern)</h2>
+
+        {% for detalle in orden.detalles %}
+        <div class="card" style="background: #f8f9fa;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <h3>{{ detalle.nombreMueble }} (ID: {{ detalle.idMueble }})</h3>
+                    <p><strong>Cantidad:</strong> {{ detalle.cantidad }} unidad(es)</p>
+
+                    {% if detalle.variantes %}
+                    <div style="margin-top: 1rem;">
+                        <h4>🎨 Variantes Aplicadas (Decorator Pattern):</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            {% for variante in detalle.variantes %}
+                            <li style="padding: 0.5rem; background: white; margin: 0.5rem 0; border-radius: 4px;">
+                                <strong>{{ variante.nombre }}</strong>
+                                {% if variante.precioAplicadoSnapshot %}
+                                - Costo: ${{ "{:,}".format(variante.precioAplicadoSnapshot) }} CLP
+                                <span class="badge badge-success">Snapshot</span>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <p style="color: #666; margin-top: 0.5rem;">Sin variantes</p>
+                    {% endif %}
+
+                    {% if detalle.precioUnitarioFinal %}
+                    <div class="pattern-info" style="margin-top: 1rem;">
+                        <h4>💰 Precio Unitario Final (Snapshot):</h4>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #27ae60;">
+                            ${{ "{:,}".format(detalle.precioUnitarioFinal) }} CLP
+                        </p>
+                        <p>Subtotal: ${{ "{:,}".format(detalle.precioUnitarioFinal * detalle.cantidad) }} CLP</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if orden.estadoOrden == 'COTIZACION' %}
+                <button class="btn btn-danger"
+                        hx-delete="/mis-ordenes/{{ orden.idOrden }}/detalles/{{ detalle.idDetalle }}/delete"
+                        hx-target="#orden-detail"
+                        hx-swap="outerHTML"
+                        hx-confirm="¿Eliminar este item?">
+                    Eliminar
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2>Acciones (State Pattern)</h2>
+
+        {% if orden.estadoOrden == 'COTIZACION' %}
+        <div class="pattern-info">
+            <h3>Estado Actual: COTIZACION</h3>
+            <p>✓ Puede modificar la orden (agregar/eliminar items)</p>
+            <p>✓ Puede confirmar para convertir a VENTA</p>
+            <p>✓ Puede cancelar</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-success"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/confirmar"
+                    hx-target="#orden-detail"
+                    hx-swap="outerHTML"
+                    hx-confirm="¿Confirmar orden? Esto aplicará el Snapshot Pattern y congelará los precios.">
+                Confirmar Orden (COTIZACION → VENTA)
+            </button>
+            <button class="btn btn-danger"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/cancelar"
+                    hx-target="#orden-detail"
+                    hx-swap="outerHTML"
+                    hx-confirm="¿Cancelar orden?">
+                Cancelar Orden
+            </button>
+        </div>
+
+        {% elif orden.estadoOrden == 'VENTA' %}
+        <div class="pattern-info">
+            <h3>Estado Actual: VENTA</h3>
+            <p>✗ No se puede modificar la orden (inmutable)</p>
+            <p>✗ No se puede confirmar nuevamente</p>
+            <p>✓ Puede cancelar</p>
+            <p>📸 Precios congelados por Snapshot Pattern</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-danger"
+                    hx-post="/mis-ordenes/{{ orden.idOrden }}/cancelar"
+                    hx-target="#orden-detail"
+                    hx-swap="outerHTML"
+                    hx-confirm="¿Cancelar orden?">
+                Cancelar Orden
+            </button>
+        </div>
+
+        {% elif orden.estadoOrden == 'CANCELADA' %}
+        <div class="pattern-info">
+            <h3>Estado Actual: CANCELADA</h3>
+            <p>✗ No se puede modificar</p>
+            <p>✗ No se puede confirmar</p>
+            <p>Esta orden está cancelada y no puede realizar acciones sobre ella.</p>
+        </div>
+
+        {% endif %}
+    </div>
+
+    <div class="pattern-info">
+        <h3>🎓 Patrones de Diseño en Acción</h3>
+        <p><strong>State Pattern:</strong> La orden tiene estado {{ orden.estadoOrden }} que controla qué operaciones están permitidas</p>
+        <p><strong>Decorator Pattern:</strong> Las variantes "decoran" los muebles base añadiendo funcionalidad sin modificar la clase Mueble</p>
+        <p><strong>Strategy Pattern:</strong> Los costos de las variantes se calculan usando diferentes estrategias (FIJO o PORCENTAJE)</p>
+        {% if orden.estadoOrden == 'VENTA' %}
+        <p><strong>Snapshot Pattern:</strong> Los precios se congelaron al confirmar y se guardan en precioUnitarioFinal y precioAplicadoSnapshot</p>
+        {% else %}
+        <p><strong>Snapshot Pattern:</strong> Se activará al confirmar la orden, congelando todos los precios calculados</p>
+        {% endif %}
+    </div>
+</div>
