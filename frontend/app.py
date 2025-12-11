@@ -379,13 +379,36 @@ def admin_ordenes_create():
 
     data = {'detalles': detalles}
     print(f"Admin sending order data: {data}")
-    result = api_post('/ordenes', data, authenticated=True)
-    if result:
-        return redirect(url_for('ordenes_list'))
 
-    return render_template('ordenes/list.html',
-                         ordenes=api_get('/ordenes', authenticated=True) or [],
-                         error="Error al crear la orden. Por favor revise los logs.")
+    # Mejorar manejo de errores para obtener mensaje del backend
+    try:
+        headers = get_auth_headers()
+        headers['Content-Type'] = 'application/json'
+        response = requests.post(f"{API_BASE_URL}/ordenes", json=data, headers=headers)
+
+        if response.status_code == 201:
+            return redirect(url_for('ordenes_list'))
+        else:
+            # Intentar extraer el mensaje de error del backend
+            error_message = "Error al crear la orden"
+            try:
+                error_text = response.text
+                # El backend devuelve el mensaje directamente como texto cuando hay RuntimeException
+                if error_text and len(error_text) < 500:  # Evitar mensajes muy largos
+                    error_message = error_text
+                elif "Stock insuficiente" in error_text:
+                    error_message = "Stock insuficiente para uno o más productos en la orden"
+            except:
+                pass
+
+            return render_template('ordenes/list.html',
+                                 ordenes=api_get('/ordenes', authenticated=True) or [],
+                                 error=error_message)
+    except requests.exceptions.RequestException as e:
+        print(f"API Error: {e}")
+        return render_template('ordenes/list.html',
+                             ordenes=api_get('/ordenes', authenticated=True) or [],
+                             error="Error de conexión al crear la orden")
 
 @app.route('/admin/ordenes/<int:id>')
 @admin_required
@@ -463,13 +486,36 @@ def ordenes_create():
 
     data = {'detalles': detalles}
     print(f"Sending order data: {data}")
-    result = api_post('/ordenes', data, authenticated=True)
-    if result:
-        return redirect(url_for('mis_ordenes_list'))
 
-    return render_template('ordenes/list.html',
-                         ordenes=api_get('/ordenes', authenticated=True) or [],
-                         error="Error al crear la orden. Por favor revise los logs.")
+    # Mejorar manejo de errores para obtener mensaje del backend
+    try:
+        headers = get_auth_headers()
+        headers['Content-Type'] = 'application/json'
+        response = requests.post(f"{API_BASE_URL}/ordenes", json=data, headers=headers)
+
+        if response.status_code == 201:
+            return redirect(url_for('mis_ordenes_list'))
+        else:
+            # Intentar extraer el mensaje de error del backend
+            error_message = "Error al crear la orden"
+            try:
+                error_text = response.text
+                # El backend devuelve el mensaje directamente como texto cuando hay RuntimeException
+                if error_text and len(error_text) < 500:  # Evitar mensajes muy largos
+                    error_message = error_text
+                elif "Stock insuficiente" in error_text:
+                    error_message = "Stock insuficiente para uno o más productos en la orden"
+            except:
+                pass
+
+            return render_template('ordenes/list.html',
+                                 ordenes=api_get('/ordenes', authenticated=True) or [],
+                                 error=error_message)
+    except requests.exceptions.RequestException as e:
+        print(f"API Error: {e}")
+        return render_template('ordenes/list.html',
+                             ordenes=api_get('/ordenes', authenticated=True) or [],
+                             error="Error de conexión al crear la orden")
 
 @app.route('/mis-ordenes/<int:id>')
 @login_required
